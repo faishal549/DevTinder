@@ -16,8 +16,11 @@ authRouter.post("/signup", async (req, res) => {
         //**Password Encryption */
 
         const hashPaasword = await bcrypt.hash(password, 10)
-        await User.create({ firstName, lastName, emailId, password: hashPaasword })
-        res.status(200).json({ message: "New user added successfully!!" })
+        const userData = await User.create({ firstName, lastName, emailId, password: hashPaasword })
+        const token = await userData.generateToken()
+
+        res.cookie("token", token, { expires: new Date(Date.now() + 3600000) })
+        res.status(200).json({ message: "New user added successfully!!", data: userData })
     } catch (error) {
         res.status(400).json({ message: "ERROR:" + error.message })
     }
@@ -31,7 +34,8 @@ authRouter.post("/login", async (req, res) => {
         //**check email */
         const isEmailExist = await User.findOne({ emailId: emailId })
         if (!isEmailExist) {
-            throw new Error("Invalid Credentials")
+            // throw new Error("Invalid Credentials")
+            res.status(400).json({ message: "Invalid Credentials" })
         }
         //**Verifiy the password */
 
@@ -43,7 +47,10 @@ authRouter.post("/login", async (req, res) => {
             const token = await isEmailExist.generateToken()
 
             res.cookie("token", token, { expires: new Date(Date.now() + 3600000) })
-            res.status(200).json({ message: "Login successful !!" })
+            res.status(200).json({
+                message: "Login successful !!",
+                user: isEmailExist
+            })
         }
 
     } catch (error) {

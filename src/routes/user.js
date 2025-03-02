@@ -67,6 +67,7 @@ userRouter.get("/feed", authMiddleware, async (req, res) => {
         let limit = req.query.limit || 10
         limit = limit > 50 ? 50 : limit
         const skip = (page - 1) * limit
+        
 
         const connectionRequest = await ConnectionRequest.find({
             $or: [

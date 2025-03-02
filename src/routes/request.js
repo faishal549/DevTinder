@@ -6,10 +6,10 @@ const requestRouter = express.Router()
 
 
 
-requestRouter.post("/request/send/:status/:userId", authMiddleware, async (req, res) => {
+requestRouter.post("/request/send/:status/:toUserId", authMiddleware, async (req, res) => {
     try {
         const fromUserId = req.user._id
-        const toUserId = req.params.userId
+        const toUserId = req.params.toUserId
         const status = req.params.status
 
 
@@ -46,18 +46,18 @@ requestRouter.post("/request/send/:status/:userId", authMiddleware, async (req, 
 
         await createNewConnectionRequest.save()
 
-        res.status(200).json({ message: " Request status is send as " + status })
+        return res.status(200).json({ message: " Request status is send as " + status })
 
 
     } catch (error) {
-        res.status(400).send("ERROR:" + error.message)
+        return res.status(400).send("ERROR:" + error.message)
     }
 })
 
-requestRouter.post("/request/review/:status/:userId", authMiddleware, async (req, res) => {
+requestRouter.post("/request/review/:status/:requestId", authMiddleware, async (req, res) => {
     try {
         const loggedInUser = req.user
-        const { status, userId } = req.params
+        const { status, requestId } = req.params
 
         const AllowedStatus = ["accepted", "rejected"]
         if (!AllowedStatus.includes(status)) {
@@ -65,17 +65,17 @@ requestRouter.post("/request/review/:status/:userId", authMiddleware, async (req
         }
 
         const connectionRequest = await ConnectionRequest.findOne({
-            fromUserId: userId,
+            _id: requestId,
             toUserId: loggedInUser._id,
             status: "interested"
 
         })
         if (!connectionRequest) {
-            res.status(400).json({ message: "Invalid request made" })
+            return res.status(400).json({ message: "Invalid request made" })
         }
         connectionRequest.status = status
         await connectionRequest.save()
-        res.status(200).json({ message: "Request has been" + status })
+        return res.status(200).json({ message: "Request has been" + status })
     } catch (error) {
         res.status(400).json({ message: error.message })
     }
