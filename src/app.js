@@ -30,7 +30,7 @@ app.use("/", userRouter)
 ConnectDB().then(() => {
     console.log("Database connected Successfully!!")
 
-    app.listen(7777, () => {
+    app.listen(process.env.PORT, () => {
         console.log("server is listening at port no : 7777...")
     })
 }).catch(() => {
